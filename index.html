@@ -121,11 +121,12 @@
           };
 
           // ---- 行为演示循环 ----
-          // Unity 加载完成后直接用 unityInstance 发消息，最可靠
-          // 站立 4s → 步行 5s → 站立 4s ... 无限循环
+          // JS 调用 UpdateBehaviorFromJS 时，C# 侧会自动停止 demo mode，
+          // 由 JS 单独控制动画，避免两个循环互相打架。
+          // 站立 3s → 步行 10s → 站立 3s ... 无限循环
           setTimeout(function () {
             var behaviors = ['Standing', 'Walking'];
-            var durations  = [4000, 5000];
+            var durations  = [3000, 10000]; // 站立3s，步行10s
             var idx = 0;
             function cycle() {
               unityInstance.SendMessage('ModelManager', 'UpdateBehaviorFromJS', behaviors[idx]);
