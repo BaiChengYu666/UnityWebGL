@@ -109,6 +109,24 @@
 
       loadingBar.style.display = "block";
 
+      // ---- 行为演示循环 ----
+      // Unity 初始化完成后调用 window.onUnityReady()
+      // 此处提前定义，让模型自动循环 站立(4s) → 步行(5s)
+      window.onUnityReady = function() {
+        var behaviors = ['Standing', 'Walking'];
+        var durations  = [4000, 5000];
+        var idx = 0;
+        function cycle() {
+          if (window.unityUpdateBehavior) {
+            window.unityUpdateBehavior(behaviors[idx]);
+          }
+          var wait = durations[idx];
+          idx = (idx + 1) % 2;
+          setTimeout(cycle, wait);
+        }
+        setTimeout(cycle, 1000); // Unity 就绪后 1 秒开始
+      };
+
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
