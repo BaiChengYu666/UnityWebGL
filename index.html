@@ -109,38 +109,37 @@
 
       loadingBar.style.display = "block";
 
-      // ---- 行为演示循环 ----
-      // Unity 初始化完成后调用 window.onUnityReady()
-      // 此处提前定义，让模型自动循环 站立(4s) → 步行(5s)
-      window.onUnityReady = function() {
-        var behaviors = ['Standing', 'Walking'];
-        var durations  = [4000, 5000];
-        var idx = 0;
-        function cycle() {
-          if (window.unityUpdateBehavior) {
-            window.unityUpdateBehavior(behaviors[idx]);
-          }
-          var wait = durations[idx];
-          idx = (idx + 1) % 2;
-          setTimeout(cycle, wait);
-        }
-        setTimeout(cycle, 1000); // Unity 就绪后 1 秒开始
-      };
-
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-              }).catch((message) => {
-                alert(message);
-              });
-            };
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+          fullscreenButton.onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+
+          // ---- 行为演示循环 ----
+          // Unity 加载完成后直接用 unityInstance 发消息，最可靠
+          // 站立 4s → 步行 5s → 站立 4s ... 无限循环
+          setTimeout(function () {
+            var behaviors = ['Standing', 'Walking'];
+            var durations  = [4000, 5000];
+            var idx = 0;
+            function cycle() {
+              unityInstance.SendMessage('ModelManager', 'UpdateBehaviorFromJS', behaviors[idx]);
+              var wait = durations[idx];
+              idx = (idx + 1) % 2;
+              setTimeout(cycle, wait);
+            }
+            cycle();
+          }, 3000); // 等场景稳定 3 秒后开始
+
+        }).catch((message) => {
+          alert(message);
+        });
+      };
 
       document.body.appendChild(script);
 
